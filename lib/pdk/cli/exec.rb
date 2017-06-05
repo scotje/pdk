@@ -39,7 +39,7 @@ module PDK
       end
 
       def self.git_bindir
-        @git_dir ||= File.join(pdk_basedir, 'private', 'git', 'bin')
+        @git_dir ||= File.join(pdk_basedir, 'private', 'git', (Gem.win_platform? ? 'cmd' : 'bin'))
       end
 
       def self.git(*args)
