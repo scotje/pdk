@@ -113,8 +113,9 @@ module PDK
           rescue => e
             error_msg = _(
               "Failed to render template '%{template}'\n" +
-              "%{exception}: %{message}"
-              ) % {:template => template_file, :exception => e.class, :message => e.message}
+              "%{exception}: %{message}\n" +
+              "%{backtrace}"
+              ) % {:template => template_file, :exception => e.class, :message => e.message, :backtrace => e.backtrace.join("\n")}
             raise PDK::CLI::FatalError, error_msg
           end
 
