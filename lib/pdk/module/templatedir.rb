@@ -1,4 +1,6 @@
 require 'yaml'
+require 'pathname'
+
 require 'pdk/util'
 require 'pdk/cli/exec'
 require 'pdk/cli/errors'
@@ -186,10 +188,14 @@ module PDK
       #
       # @api private
       def files_in_template
+        moduleroot_path = Pathname.new(@moduleroot_dir)
+
         @files ||= Dir.glob(File.join(@moduleroot_dir, "**", "*"), File::FNM_DOTMATCH).select { |template_path|
           File.file?(template_path) && !File.symlink?(template_path)
         }.map { |template_path|
-          template_path.sub(/\A#{Regexp.escape(@moduleroot_dir)}#{Regexp.escape(File::SEPARATOR)}/, '')
+          # This used to be done with a regex but that didn't always work on Windows
+          # due to paths sometimes being in DOS 8.3 format. (e.g. "C:\PROGRA~1")
+          Pathname.new(template_path).relative_path_from(moduleroot_path).to_s
         }
       end
 
