@@ -74,3 +74,6 @@ build-iPhoneSimulator/
 
 +# Puppet packaging files
  +/ext/packaging/
+
+# beaker output
+/junit/
