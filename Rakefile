@@ -69,7 +69,7 @@ namespace :acceptance do
     end
 
     #t.pattern = 'spec/acceptance/**.rb'
-    sh('bundle exec beaker -h acceptance_hosts.yml --pre-suite package-testing/pre/ --tests package-testing/tests/')
+    sh('bundle exec beaker -h acceptance_hosts.yml --options-file package-testing/config/options.rb --tests package-testing/tests/')
   end
 
   desc 'Run acceptance tests against current code'

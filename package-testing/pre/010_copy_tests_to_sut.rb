@@ -1,9 +1,9 @@
 test_name 'Copy pdk acceptance to the System Under Test and bundle install' do
+  require 'pdk/pdk_helper.rb'
+
   # TODO: Need assurance that the ref of the acceptance tests is 
   # correct for the ref of the package being tested.
 
-  #workstation = find_at_most_one('workstation')
-  target_dir = create_tmpdir_on(workstation, 'pdk_acceptance')
   install_dir = workstation.platform =~ /windows/ ? "/cygdrive/c/Program\\ Files/Puppet\\ Labs/DevelopmentKit"
                                                   : '/opt/puppetlabs/sdk'
   CMD_PREFIX = "PATH=#{install_dir}/private/ruby/2.1.9/bin:#{install_dir}/private/git/bin:$PATH && cd #{target_dir} && "
