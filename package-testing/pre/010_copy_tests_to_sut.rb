@@ -4,10 +4,6 @@ test_name 'Copy pdk acceptance to the System Under Test and bundle install' do
   # TODO: Need assurance that the ref of the acceptance tests is 
   # correct for the ref of the package being tested.
 
-  install_dir = workstation.platform =~ /windows/ ? "/cygdrive/c/Program\\ Files/Puppet\\ Labs/DevelopmentKit"
-                                                  : '/opt/puppetlabs/sdk'
-  CMD_PREFIX = "PATH=#{install_dir}/private/ruby/2.1.9/bin:#{install_dir}/private/git/bin:$PATH && cd #{target_dir} && "
-
   step 'Create target directory' do
     on(workstation, "mkdir -p #{target_dir}")
   end
@@ -25,11 +21,11 @@ test_name 'Copy pdk acceptance to the System Under Test and bundle install' do
   end
 
   step 'Install pdk gem bundle using pdk\'s ruby' do
-    on(workstation, "#{CMD_PREFIX} bundle install --path vendor/bundle --without development package_testing --jobs 4 --retry 4")
+    on(workstation, "#{command_prefix(workstation)} bundle install --path vendor/bundle --without development package_testing --jobs 4 --retry 4")
   end
 
   step 'Check rspec is ready' do
-    on(workstation, "#{CMD_PREFIX} bundle exec rspec --version") do |outcome|
+    on(workstation, "#{command_prefix(workstation)} bundle exec rspec --version") do |outcome|
       assert_match(/[0-9\.]*/, outcome.stdout, 'rspec --version outputs some version number')
     end
   end
