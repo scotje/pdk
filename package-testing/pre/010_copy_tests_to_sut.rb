@@ -1,5 +1,6 @@
 test_name 'Copy pdk acceptance to the System Under Test and bundle install' do
   require 'pdk/pdk_helper.rb'
+  require 'pry'
 
   # TODO: Need assurance that the ref of the acceptance tests is 
   # correct for the ref of the package being tested.
@@ -8,19 +9,22 @@ test_name 'Copy pdk acceptance to the System Under Test and bundle install' do
     on(workstation, "mkdir -p #{target_dir}")
   end
 
-  step 'Copy pdk acceptance tests to the System Under Test' do
-    scp_to(workstation, 'spec', "#{target_dir}/spec", {recursive: true})    
+  # Required directories from pdk repo to run tests
+  %w(spec lib locales).each do |dir|
+    step "Copy #{dir} dir from pdk repo to System Under Test" do
+      scp_to(workstation, dir, "#{target_dir}/#{dir}")
+    end
   end
 
-  step 'Copy pdk Gemfile to System Under Test' do
-    scp_to(workstation, 'Gemfile', target_dir)
-  end
-
-  step 'Remove gemspec from Gemfile' do
-    on(workstation, "sed -i 's/^gemspec//g' #{target_dir}/Gemfile")
+  # Required files from pdk repo to run tests
+  %w(Gemfile pdk.gemspec).each do |file|
+    step "Copy #{file} from pdk repo to System Under Test" do
+      scp_to(workstation, file, target_dir)
+    end
   end
 
   step 'Install pdk gem bundle using pdk\'s ruby' do
+    binding.pry
     on(workstation, "#{command_prefix(workstation)} bundle install --path vendor/bundle --without development package_testing --jobs 4 --retry 4")
   end
 
