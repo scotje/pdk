@@ -10,7 +10,7 @@ test_name 'Copy pdk acceptance to the System Under Test and bundle install' do
   end
 
   # Required directories from pdk repo to run tests
-  %w(spec lib locales).each do |dir|
+  %w(spec lib locales exe).each do |dir|
     step "Copy #{dir} dir from pdk repo to System Under Test" do
       scp_to(workstation, dir, "#{target_dir}/#{dir}")
     end
