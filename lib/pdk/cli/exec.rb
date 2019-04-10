@@ -19,6 +19,10 @@ module PDK
         Command.new(*cmd).tap { |c| c.environment = env }.execute!
       end
 
+      def self.execute_interactive(*cmd)
+        Command.new(*cmd).tap { |c| c.interactive! }.execute!
+      end
+
       def self.ensure_bin_present!(bin_path, bin_name)
         message = _('Unable to find `%{name}`. Check that it is installed and try again.') % {
           name: bin_name,
@@ -62,6 +66,19 @@ module PDK
         vendored_bin_full_path
       end
 
+      # FIXME: this isn't quite sufficient
+      class TeeIO < IO
+        def initialize(orig, file)
+          @orig = orig
+          @file = file
+        end
+
+        def write(string)
+          @file.write(string)
+          @orig.write(string)
+        end
+      end
+
       # TODO: decide how/when to connect stdin to child process for things like pry
       # TODO: need a way to set callbacks on new stdout/stderr data
       class Command
@@ -91,6 +108,17 @@ module PDK
 
           # Register the ExecGroup when running in parallel
           @exec_group = nil
+        end
+
+        def interactive!
+          @interactive = true
+          @spinner = nil
+          @process.duplex = true
+
+          #@process.io.stdout = TeeIO.new($stdout, @stdout)
+          #@process.io.stderr = TeeIO.new($stderr, @stderr)
+          @process.io.stdout = $stdout
+          @process.io.stderr = $stderr
         end
 
         def context=(new_context)
@@ -218,6 +246,22 @@ module PDK
 
           start_time = Time.now
 
+          if @interactive
+            require 'io/console'
+            require 'io/wait'
+
+            stdin_thread = Thread.new do
+              # FIXME: this might be chewing a lot of unnecessary CPU
+              loop do
+                char = $stdin.getc
+
+                if char
+                  @process.io.stdin.write(char)
+                end
+              end
+            end
+          end
+
           begin
             @process.start
           rescue ChildProcess::LaunchError => e
@@ -233,6 +277,11 @@ module PDK
           else
             # Wait indfinitely if no timeout set.
             @process.wait
+          end
+
+          if stdin_thread
+            stdin_thread.kill
+            stdin_thread.join
           end
 
           @duration = Time.now - start_time

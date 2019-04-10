@@ -24,6 +24,7 @@ module PDK
           c.context = :module
           c.add_spinner(spinner_text)
           c.environment = environment
+          c.interactive!
         end
 
         command.execute!
@@ -70,7 +71,8 @@ module PDK
 
         tests = options.fetch(:tests)
 
-        environment = { 'CI_SPEC_OPTIONS' => '--format j' }
+        environment = {}
+        environment['CI_SPEC_OPTIONS'] = '--format j' unless options[:interactive]
         environment['PUPPET_GEM_VERSION'] = options[:puppet] if options[:puppet]
         spinner_msg = options.key?(:parallel) ? _('Running unit tests in parallel.') : _('Running unit tests.')
         result = rake(cmd(tests, options), spinner_msg, environment)
